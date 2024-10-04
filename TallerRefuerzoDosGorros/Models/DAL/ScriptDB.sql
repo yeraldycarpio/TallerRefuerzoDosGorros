@@ -1,0 +1,13 @@
+CREATE DATABASE GORROS;
+
+use GORROS;
+
+--tabla gorros
+
+CREATE TABLE Gorros (
+    Id INT PRIMARY KEY IDENTITY,
+    Nombre VARCHAR(100) NOT NULL,
+    Color VARCHAR(50) NOT NULL,
+    Material VARCHAR(50) NOT NULL,
+    Precio DECIMAL(10, 2) NOT NULL
+);
