@@ -1,0 +1,44 @@
+﻿@model IEnumerable<SearchResultGorrosDTO.GorroDTO>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(item => item.Nombre)
+            </th>
+            <th>
+                @Html.DisplayNameFor(item => item.Color)
+            </th>
+            <th>
+                @Html.DisplayNameFor(item => item.Material)
+            </th>
+            <th>
+                @Html.DisplayNameFor(item => item.Precio)
+            </th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Nombre)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Color)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Material)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Precio)
+                </td>
+                <td>
+                    @Html.ActionLink("Modificar", "Edit", new {  id=item.Id  }) |
+                    @Html.ActionLink("Ver", "Details", new {  id=item.Id  }) |
+                    @Html.ActionLink("Eliminar", "Delete", new {  id=item.Id  })
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
