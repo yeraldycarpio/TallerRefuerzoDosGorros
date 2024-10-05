@@ -78,7 +78,6 @@ namespace Gorros.AppWebMVC.Controllers
             }
         }
 
-        // Método para mostrar el formulario de edición de un cliente
         public async Task<IActionResult> Edit(int id)
         {
             var result = new GetIdResultGorrosDTO();
