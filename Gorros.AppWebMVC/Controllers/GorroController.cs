@@ -5,15 +5,16 @@ namespace Gorros.AppWebMVC.Controllers
 {
     public class GorroController : Controller
     {
-        private readonly HttpClient _httpGorroCRMAPI;
+        private readonly HttpClient _httpGorroAPI;
 
         public GorroController(IHttpClientFactory httpGorroFactory)
         {
-            _httpGorroCRMAPI = httpGorroFactory.CreateClient("CRMAPI");
+            _httpGorroAPI = httpGorroFactory.CreateClient("GAPI");
         }
 
         public async Task<IActionResult> Index(SearchQueryGorrosDTO searchQueryGorroDTO, int CountRow = 0)
         {
+            // Establecer valores predeterminados
             if (searchQueryGorroDTO.SendRowCount == 0)
                 searchQueryGorroDTO.SendRowCount = 2;
             if (searchQueryGorroDTO.Take == 0)
@@ -21,12 +22,21 @@ namespace Gorros.AppWebMVC.Controllers
 
             var result = new SearchResultGorrosDTO();
 
-            var response = await _httpGorroCRMAPI.PostAsJsonAsync("/gorro/search", searchQueryGorroDTO);
+            // POST: /gorro/search
+            var response = await _httpGorroAPI.PostAsJsonAsync("/gorro/search", searchQueryGorroDTO);
 
             if (response.IsSuccessStatusCode)
+            {
                 result = await response.Content.ReadFromJsonAsync<SearchResultGorrosDTO>();
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Error en la llamada a la API: {response.StatusCode}, Contenido: {errorContent}");
+                ViewBag.Error = "Error al buscar gorros.";
+            }
 
-            result = result != null ? result : new SearchResultGorrosDTO();
+            result ??= new SearchResultGorrosDTO();
 
             if (result.CountRow == 0 && searchQueryGorroDTO.SendRowCount == 1)
                 result.CountRow = CountRow;
@@ -42,10 +52,17 @@ namespace Gorros.AppWebMVC.Controllers
         {
             var result = new GetIdResultGorrosDTO();
 
-            var response = await _httpGorroCRMAPI.GetAsync("/gorro/" + id);
+            // GET: /gorro/{id}
+            var response = await _httpGorroAPI.GetAsync($"/gorro/{id}");
 
             if (response.IsSuccessStatusCode)
+            {
                 result = await response.Content.ReadFromJsonAsync<GetIdResultGorrosDTO>();
+            }
+            else
+            {
+                ViewBag.Error = "Error al obtener los detalles del gorro.";
+            }
 
             return View(result ?? new GetIdResultGorrosDTO());
         }
@@ -61,30 +78,39 @@ namespace Gorros.AppWebMVC.Controllers
         {
             try
             {
-                var response = await _httpGorroCRMAPI.PostAsJsonAsync("/gorro", createGorrosDTO);
+                // POST: /gorro
+                var response = await _httpGorroAPI.PostAsJsonAsync("/gorro", createGorrosDTO);
 
                 if (response.IsSuccessStatusCode)
                 {
                     return RedirectToAction(nameof(Index));
                 }
 
-                ViewBag.Error = "Error al intentar guardar el registro";
-                return View();
+                ViewBag.Error = "Error al intentar guardar el registro.";
+                return View(createGorrosDTO);
             }
             catch (Exception ex)
             {
-                ViewBag.Error = ex.Message;
-                return View();
+                ViewBag.Error = $"Ocurrió un error: {ex.Message}";
+                return View(createGorrosDTO);
             }
         }
 
         public async Task<IActionResult> Edit(int id)
         {
             var result = new GetIdResultGorrosDTO();
-            var response = await _httpGorroCRMAPI.GetAsync("/gorro/" + id);
+
+            // GET: /gorro/{id}
+            var response = await _httpGorroAPI.GetAsync($"/gorro/{id}");
 
             if (response.IsSuccessStatusCode)
+            {
                 result = await response.Content.ReadFromJsonAsync<GetIdResultGorrosDTO>();
+            }
+            else
+            {
+                ViewBag.Error = "Error al intentar editar el registro.";
+            }
 
             return View(new EditGorrosDTO(result ?? new GetIdResultGorrosDTO()));
         }
@@ -95,30 +121,39 @@ namespace Gorros.AppWebMVC.Controllers
         {
             try
             {
-                var response = await _httpGorroCRMAPI.PutAsJsonAsync("/gorro", editGorroDTO);
+                // PUT: /gorro
+                var response = await _httpGorroAPI.PutAsJsonAsync("/gorro", editGorroDTO);
 
                 if (response.IsSuccessStatusCode)
                 {
                     return RedirectToAction(nameof(Index));
                 }
 
-                ViewBag.Error = "Error al intentar editar el registro";
-                return View();
+                ViewBag.Error = "Error al intentar editar el registro.";
+                return View(editGorroDTO);
             }
             catch (Exception ex)
             {
-                ViewBag.Error = ex.Message;
-                return View();
+                ViewBag.Error = $"Ocurrió un error: {ex.Message}";
+                return View(editGorroDTO);
             }
         }
 
         public async Task<IActionResult> Delete(int id)
         {
             var result = new GetIdResultGorrosDTO();
-            var response = await _httpGorroCRMAPI.GetAsync("/gorro/" + id);
+
+            // GET: /gorro/{id}
+            var response = await _httpGorroAPI.GetAsync($"/gorro/{id}");
 
             if (response.IsSuccessStatusCode)
+            {
                 result = await response.Content.ReadFromJsonAsync<GetIdResultGorrosDTO>();
+            }
+            else
+            {
+                ViewBag.Error = "Error al intentar eliminar el registro.";
+            }
 
             return View(result ?? new GetIdResultGorrosDTO());
         }
@@ -129,19 +164,20 @@ namespace Gorros.AppWebMVC.Controllers
         {
             try
             {
-                var response = await _httpGorroCRMAPI.DeleteAsync("/gorro/" + id);
+                // DELETE: /gorro/{id}
+                var response = await _httpGorroAPI.DeleteAsync($"/gorro/{id}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     return RedirectToAction(nameof(Index));
                 }
 
-                ViewBag.Error = "Error al intentar eliminar el registro";
+                ViewBag.Error = "Error al intentar eliminar el registro.";
                 return View(getIdResultGorroDTO);
             }
             catch (Exception ex)
             {
-                ViewBag.Error = ex.Message;
+                ViewBag.Error = $"Ocurrió un error: {ex.Message}";
                 return View(getIdResultGorroDTO);
             }
         }
