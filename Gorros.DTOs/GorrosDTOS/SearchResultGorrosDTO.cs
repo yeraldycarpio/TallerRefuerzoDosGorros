@@ -4,7 +4,7 @@ namespace Gorros.DTOs.GorrosDTOS
 {
     public class SearchResultGorrosDTO
     {
-        public int CountRow { get; set; }
+        public int? CountRow { get; set; }
         public List<GorroDTO>? Data { get; set; }
         public class GorroDTO
         {

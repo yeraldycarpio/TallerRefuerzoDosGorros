@@ -1,11 +1,9 @@
 ﻿@model SearchQueryGorrosDTO
 @{
-    // Obtiene el valor de CountRow de la ViewBag
-    int totalRegistros = (int)ViewBag.CountRow; 
-    // Calcula el número total de páginas
-    int totalPaginas = (int)Math.Ceiling((double)totalRegistros / Model.Take); 
+    int totalRegistros = (int)(ViewBag.CountRow ?? 0);
+    int totalPaginas = (int)Math.Ceiling((double)totalRegistros / Model.Take);
 }
-<h4>Buscar Gorro</h4>
+<h4>Buscar Producto</h4>
 <hr />
 <div class="row">
     <form asp-action="Index">
@@ -19,27 +17,6 @@
                     <label asp-for="Nombre_Like" class="control-label"></label>
                     <input asp-for="Nombre_Like" class="form-control" />
                     <span asp-validation-for="Nombre_Like" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="form-group">
-                    <label asp-for="Color_Like" class="control-label"></label>
-                    <input asp-for="Color_Like" class="form-control" />
-                    <span asp-validation-for="Color_Like" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="form-group">
-                    <label asp-for="Material_Like" class="control-label"></label>
-                    <input asp-for="Material_Like" class="form-control" />
-                    <span asp-validation-for="Material_Like" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="form-group">
-                    <label asp-for="Precio_Like" class="control-label"></label>
-                    <input asp-for="Precio_Like" class="form-control" />
-                    <span asp-validation-for="Precio_Like" class="text-danger"></span>
                 </div>
             </div>
             <div class="col-2">
@@ -76,7 +53,7 @@
             <nav aria-label="Page navigation example">
                 <ul class="pagination">
                     @{
-                        int skipAnte = Model.Skip > 0 ? Model.Skip - Model.Take : 0;                       
+                        int skipAnte = Model.Skip > 0 ? Model.Skip - Model.Take : 0;
                         int skipMax = 0;
                     }
                     <li class="page-item"><a class="page-link" data-skip="@skipAnte" href="#" onclick="paginacion(this)">Anterior</a></li>
@@ -100,11 +77,10 @@
                     }
                     <li class="page-item"><a class="page-link" data-skip="@skipSi" href="#" onclick="paginacion(this)">Siguiente</a></li>
                 </ul>
-                
             </nav>
         </div>
         <div class="row-cols-6">
-            <span>Total registros:@totalRegistros</span>
+            <span>Total registros: @totalRegistros</span>
         </div>
     </form>
 </div>

@@ -11,27 +11,43 @@ namespace TallerRefuerzoDosGorros.Endpoints
             //Metodo para Buscar
             app.MapPost("/gorro/search", async (SearchQueryGorrosDTO gorroDTO, GorrosDAL gorrosDAL) =>
             {
-                var gorro2 = new Gorro
+                var gorro = new Gorro
                 {
                     nombre = gorroDTO.Nombre_Like != null ? gorroDTO.Nombre_Like : string.Empty
                 };
 
-                var gorro3 = new List<Gorro>();
-                int countRow = 0;
+                var producters = new List<Gorro>();
+                int conutRow = 0;
 
                 if (gorroDTO.SendRowCount == 2)
                 {
-                    gorro3 = await gorrosDAL.Search(gorro2, skip: gorroDTO.Skip, take: gorroDTO.Take);
-                    if (gorro3.Count > 0)
-                    {
-                        countRow = await gorrosDAL.CountSearch(gorro2);
-                    }
+                    producters = await gorrosDAL.Search(gorro, skip: gorroDTO.Skip, take: gorroDTO.Take);
+                    if (producters.Count > 0)
+                        conutRow = await gorrosDAL.CountSearch(gorro);
                 }
                 else
                 {
-                    gorro3 = await gorrosDAL.Search(gorro2, skip: gorroDTO.Skip, take: gorroDTO.Take);
+                    producters = await gorrosDAL.Search(gorro, skip: gorroDTO.Skip, take: gorroDTO.Take);
                 }
+                var productResult = new SearchResultGorrosDTO
+                {
+                    Data = new List<SearchResultGorrosDTO.GorroDTO>(),
+                    CountRow = conutRow
+                };
+                producters.ForEach(a =>
+                {
+                    productResult.Data.Add(new SearchResultGorrosDTO.GorroDTO
+                    {
+                        Id = a.Id,
+                        Nombre = a.nombre,
+                        Color = a.color,
+                        Material = a.material,
+                        Precio = a.precio
+                    });
+                });
+                return productResult;
             });
+
 
             //Metodo para Obtener por ID
             /*

@@ -15,6 +15,7 @@ builder.Services.AddDbContext<GDbContext>(options =>
 builder.Services.AddScoped<GorrosDAL>();
 var app = builder.Build();
 
+app.AddGorroEndpoints();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

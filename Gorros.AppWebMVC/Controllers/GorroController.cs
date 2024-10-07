@@ -1,5 +1,6 @@
 ﻿using Gorros.DTOs.GorrosDTOS;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace Gorros.AppWebMVC.Controllers
 {
@@ -9,44 +10,61 @@ namespace Gorros.AppWebMVC.Controllers
 
         public GorroController(IHttpClientFactory httpGorroFactory)
         {
-            _httpGorroAPI = httpGorroFactory.CreateClient("GAPI");
+            _httpGorroAPI = httpGorroFactory.CreateClient("GorroApi");
         }
 
-        public async Task<IActionResult> Index(SearchQueryGorrosDTO searchQueryGorroDTO, int CountRow = 0)
+        public async Task<IActionResult> Index(SearchQueryGorrosDTO searchQueryGorrosDTO, int CountRow = 0)
         {
-            // Establecer valores predeterminados
-            if (searchQueryGorroDTO.SendRowCount == 0)
-                searchQueryGorroDTO.SendRowCount = 2;
-            if (searchQueryGorroDTO.Take == 0)
-                searchQueryGorroDTO.Take = 10;
+            // Initialize searchQueryGorrosDTO if null
+            searchQueryGorrosDTO ??= new SearchQueryGorrosDTO();
+
+            // Set default values for SendRowCount and Take
+            if (searchQueryGorrosDTO.SendRowCount == 0)
+                searchQueryGorrosDTO.SendRowCount = 2;
+            if (searchQueryGorrosDTO.Take == 0)
+                searchQueryGorrosDTO.Take = 10;
 
             var result = new SearchResultGorrosDTO();
 
-            // POST: /gorro/search
-            var response = await _httpGorroAPI.PostAsJsonAsync("/gorro/search", searchQueryGorroDTO);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                result = await response.Content.ReadFromJsonAsync<SearchResultGorrosDTO>();
+                // Perform the API call
+                var response = await _httpGorroAPI.PostAsJsonAsync("/gorro/search", searchQueryGorrosDTO);
+
+                // Check if response is successful
+                if (response.IsSuccessStatusCode)
+                {
+                    result = await response.Content.ReadFromJsonAsync<SearchResultGorrosDTO>()
+                             ?? new SearchResultGorrosDTO(); // Ensure result is not null
+                }
+                else
+                {
+                    ViewBag.Error = "Error retrieving data from the server.";
+                }
             }
-            else
+            catch (JsonException ex)
             {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Error en la llamada a la API: {response.StatusCode}, Contenido: {errorContent}");
-                ViewBag.Error = "Error al buscar gorros.";
+                ViewBag.Error = $"Error deserializing response: {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = $"An error occurred: {ex.Message}";
             }
 
-            result ??= new SearchResultGorrosDTO();
-
-            if (result.CountRow == 0 && searchQueryGorroDTO.SendRowCount == 1)
+            // Set CountRow if needed
+            if (result.CountRow == 0 && searchQueryGorrosDTO.SendRowCount == 1)
                 result.CountRow = CountRow;
 
+            // Set ViewBag properties
             ViewBag.CountRow = result.CountRow;
-            searchQueryGorroDTO.SendRowCount = 0;
-            ViewBag.SearchQuery = searchQueryGorroDTO;
+            ViewBag.SearchQuery = searchQueryGorrosDTO;
 
             return View(result);
         }
+
+
+
+
 
         public async Task<IActionResult> Details(int id)
         {
